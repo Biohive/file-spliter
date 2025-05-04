@@ -2,11 +2,10 @@
 # 
 # This script helps split files (CSV) into smaller chunks
 #
-
-# $file_path = "/Tier1/Historical_data.csv"
+# Test file location: "/Tier1/test/Historical_data.csv"
 
 # Input Variables / Defaults
-file_path="/Backups/Resources/Software/other/isolation/test.iso"
+file_path=""
 chunk_size=5000000
 dev_mode=false
 LOG_LEVEL="INFO"
