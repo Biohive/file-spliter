@@ -77,12 +77,25 @@ validate_file() {
     return 1
   fi
 
-  return 0
+  return "0"
+}
+
+get_file_size() {
+  # Return file size in GB
+  local file_path_to_check="$1"
+  if [ -f "$file_path_to_check" ]; then
+    file_size_bytes=$(stat --format="%s" "$file_path_to_check")
+    file_size_gb=$(echo "scale=2; $file_size_bytes / (1024 * 1024 * 1024)" | bc)
+    echo "$file_size_gb"
+  else
+    echo "0"
+  fi
 }
 
 getting_started_msg() {
   echo "Starting file processing..."
   echo "File path: $file_path"
+  echo "File size: $(get_file_size "$file_path") Gigabytes"
   echo "Chunk size: $chunk_size lines"
   echo "Log level: $LOG_LEVEL"
 }
