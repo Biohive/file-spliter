@@ -93,11 +93,11 @@ get_file_size() {
 }
 
 getting_started_msg() {
-  echo "Starting file processing..."
   echo "File path: $file_path"
   echo "File size: $(get_file_size "$file_path") Gigabytes"
   echo "Chunk size: $chunk_size lines"
   echo "Log level: $LOG_LEVEL"
+  echo -e "/n"
 }
 
 process_file() {
@@ -110,6 +110,7 @@ process_file() {
       exit 1
     fi
     echo "Processing $f"
+    echo -e "File size of part: $(get_file_size "$f") Gigabytes"
     # Add your processing command here
     # For example, you can use psql to import the CSV into a database
     # psql -U postgres -d hist-trade-1 -c "\COPY option_quotes FROM '$PWD/$f' CSV HEADER"
