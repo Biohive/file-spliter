@@ -6,7 +6,10 @@
 # $file_path = "/Tier1/Historical_data.csv"
 
 # Input Variables / Defaults
-$file_path = "/Backups/Resources/Software/other/isolation/test.iso"
+file_path="/Backups/Resources/Software/other/isolation/test.iso"
+chunk_size=5000000
+dev_mode=false
+LOG_LEVEL="INFO"
 
 process_args() {
     for arg in "$@"; do
@@ -53,20 +56,28 @@ EOF
 #endregion
 
 validate_file() {
-  if [ ! -f "$file_path" ]; then
-    echo "File $file_path does not exist."
-    exit 1
+  local file_path_to_validate="$1"
+
+  if [ -z "$file_path_to_validate" ]; then
+    echo "File path is required."
+    return 1
+  fi
+  if [ ! -f "$file_path_to_validate" ]; then
+    echo "File $file_path_to_validate does not exist."
+    return 1
   fi
 
-  if [ ! -r "$file_path" ]; then
-    echo "File $file_path is not readable."
-    exit 1
+  if [ ! -r "$file_path_to_validate" ]; then
+    echo "File $file_path_to_validate is not readable."
+    return 1
   fi
 
-  if [ ! -s "$file_path" ]; then
-    echo "File $file_path is empty."
-    exit 1
+  if [ ! -s "$file_path_to_validate" ]; then
+    echo "File $file_path_to_validate is empty."
+    return 1
   fi
+
+  return 0
 }
 
 process_file() {
@@ -75,9 +86,8 @@ process_file() {
 
   for f in part_*; do
     # Check if the file is empty
-    if [ ! -s "$f" ]; then
-      echo "File $f is empty, skipping."
-      continue
+    if ! validate_file "$f"; then
+      exit 1
     fi
     echo "Processing $f"
     # Add your processing command here
@@ -89,5 +99,5 @@ process_file() {
 
 
 process_args "$@"
-validate_file
+if ! validate_file "$file_path" ; then exit 1; fi
 process_file
