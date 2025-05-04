@@ -80,6 +80,13 @@ validate_file() {
   return 0
 }
 
+getting_started_msg() {
+  echo "Starting file processing..."
+  echo "File path: $file_path"
+  echo "Chunk size: $chunk_size lines"
+  echo "Log level: $LOG_LEVEL"
+}
+
 process_file() {
   
   split -l $chunk_size $file_path part_
@@ -100,4 +107,5 @@ process_file() {
 
 process_args "$@"
 if ! validate_file "$file_path" ; then exit 1; fi
+getting_started_msg
 process_file
