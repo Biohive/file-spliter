@@ -52,11 +52,33 @@ EOF
 }
 #endregion
 
+validate_file() {
+  if [ ! -f "$file_path" ]; then
+    echo "File $file_path does not exist."
+    exit 1
+  fi
+
+  if [ ! -r "$file_path" ]; then
+    echo "File $file_path is not readable."
+    exit 1
+  fi
+
+  if [ ! -s "$file_path" ]; then
+    echo "File $file_path is empty."
+    exit 1
+  fi
+}
+
 process_file() {
+  
   split -l $chunk_size $file_path part_
 
   for f in part_*; do
-
+    # Check if the file is empty
+    if [ ! -s "$f" ]; then
+      echo "File $f is empty, skipping."
+      continue
+    fi
     echo "Processing $f"
     # Add your processing command here
     # For example, you can use psql to import the CSV into a database
@@ -67,4 +89,5 @@ process_file() {
 
 
 process_args "$@"
+validate_file
 process_file
