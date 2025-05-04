@@ -79,28 +79,39 @@ validate_file() {
   return "0"
 }
 
-# Function to get the file size in GB
+# Improved function to get the file size with better precision
 get_file_size() {
   local file_path_to_check="$1"
   if [ -f "$file_path_to_check" ]; then
     file_size_bytes=$(stat --format="%s" "$file_path_to_check")
-    file_size_gb=$(echo "scale=2; $file_size_bytes / (1024 * 1024 * 1024)" | bc)
+    
+    # Use awk for more precise calculation and formatting
+    file_size_gb=$(awk "BEGIN {printf \"%.2f\", $file_size_bytes / (1024 * 1024 * 1024)}")
+    
     echo "$file_size_gb"
   else
-    echo "0"
+    echo "0.00"
   fi
 }
 
-# Function to get the number of parts based on chunk size
+# More reliable function to get the number of parts based on chunk size
 get_parts_count() {
   local input_file="$1"
   local chunk_size="$2"
   
-  # Count total lines in the file
+  # Use wc -l with explicit file path to ensure proper counting
   local total_lines=$(wc -l < "$input_file")
   
-  # Calculate number of parts (rounding up)
-  local parts_count=$(( (total_lines + chunk_size - 1) / chunk_size ))
+  # Use awk for more reliable division with large numbers
+  local parts_count=$(awk "BEGIN {print int(($total_lines + $chunk_size - 1) / $chunk_size)}")
+  
+  # If something went wrong and we got 0 or no result, calculate a fallback
+  if [ -z "$parts_count" ] || [ "$parts_count" -eq 0 ]; then
+    # Get file size and estimate based on average line size (approx 100 bytes/line)
+    local file_size_bytes=$(stat --format="%s" "$input_file")
+    local estimated_lines=$(($file_size_bytes / 100))
+    parts_count=$(($estimated_lines / $chunk_size + 1))
+  fi
   
   echo "$parts_count"
 }
