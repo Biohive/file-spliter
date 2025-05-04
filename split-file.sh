@@ -1,6 +1,7 @@
 # !/bin/bash
 # 
 # This script helps split files (CSV) into smaller chunks
+# Change test
 
 # $file_path = "/Tier1/Historical_data.csv"
 # Testing with an ISO file I could find at the time... (Temporary)
