@@ -4,7 +4,8 @@
 #
 
 # $file_path = "/Tier1/Historical_data.csv"
-# Testing with an ISO file I could find at the time... (Temporary)
+
+# Input Variables / Defaults
 $file_path = "/Backups/Resources/Software/other/isolation/test.iso"
 
 process_args() {
@@ -55,13 +56,12 @@ process_file() {
   split -l $chunk_size $file_path part_
 
   for f in part_*; do
-  #   psql -U postgres -d hist-trade-1 \
-  #     -c "\COPY option_quotes FROM '$PWD/$f' CSV HEADER"
+
     echo "Processing $f"
     # Add your processing command here
     # For example, you can use psql to import the CSV into a database
     # psql -U postgres -d hist-trade-1 -c "\COPY option_quotes FROM '$PWD/$f' CSV HEADER"
-    rm $f
+    # Todo: Remove file (safely)
   done
 }
 
