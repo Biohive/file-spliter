@@ -140,10 +140,18 @@ process_file() {
   local start_time=$(date +%s)
   local part_count=0
   
-  echo "Starting file split process..."
-  split -l $chunk_size $file_path part_
+  # Extract directory from file_path
+  local input_dir=$(dirname "$file_path")
+  local filename=$(basename "$file_path")
+  local output_prefix="${input_dir}/part_${filename%.*}_"
   
-  for f in part_*; do
+  echo "Starting file split process..."
+  echo "Writing part files to: ${input_dir}"
+  
+  # Use the output_prefix with path for split command
+  split -l $chunk_size "$file_path" "$output_prefix"
+  
+  for f in "${input_dir}"/part_*; do
     # Check if the file is empty
     if ! validate_file "$f"; then
       exit 1
