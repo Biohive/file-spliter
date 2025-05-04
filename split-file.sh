@@ -1,7 +1,7 @@
-# !/bin/bash
+#!/bin/bash
 # 
 # This script helps split files (CSV) into smaller chunks
-# Change test 3 (from STORAGE01)
+#
 
 # $file_path = "/Tier1/Historical_data.csv"
 # Testing with an ISO file I could find at the time... (Temporary)
@@ -51,13 +51,20 @@ EOF
 }
 #endregion
 
-split -l $chunk_size $file_path part_
-for f in part_*; do
-#   psql -U postgres -d hist-trade-1 \
-#     -c "\COPY option_quotes FROM '$PWD/$f' CSV HEADER"
-  echo "Processing $f"
-  # Add your processing command here
-  # For example, you can use psql to import the CSV into a database
-  # psql -U postgres -d hist-trade-1 -c "\COPY option_quotes FROM '$PWD/$f' CSV HEADER"
-  rm $f
-done
+process_file() {
+  split -l $chunk_size $file_path part_
+
+  for f in part_*; do
+  #   psql -U postgres -d hist-trade-1 \
+  #     -c "\COPY option_quotes FROM '$PWD/$f' CSV HEADER"
+    echo "Processing $f"
+    # Add your processing command here
+    # For example, you can use psql to import the CSV into a database
+    # psql -U postgres -d hist-trade-1 -c "\COPY option_quotes FROM '$PWD/$f' CSV HEADER"
+    rm $f
+  done
+}
+
+
+process_args "$@"
+process_file
