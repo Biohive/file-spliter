@@ -2,7 +2,7 @@
 # 
 # This script helps split files (CSV) into smaller chunks
 #
-# Test file location: "/Tier1/test/Historical_data.csv"
+# Test file location: "/Tier1/test2/Historical_data.csv"
 
 # Input Variables / Defaults
 file_path=""
@@ -118,11 +118,13 @@ get_parts_count() {
 
 # Function to display a message at the start
 getting_started_msg() {
+  echo "----------------------------------------"
   echo "File path: $file_path"
   echo "File size: $(get_file_size "$file_path") Gigabytes"
   echo "Chunk size: $chunk_size lines"
   echo "Expected number of parts: $(get_parts_count "$file_path" "$chunk_size")"
-  echo "Log level: $LOG_LEVEL"
+  # echo "Log level: $LOG_LEVEL"
+  echo "----------------------------------------"
   echo -e "\n" 
 }
 
@@ -146,16 +148,12 @@ process_file() {
   local output_prefix="${input_dir}/part_${filename%.*}_"
   
   echo "Starting file split process..."
-  echo "Writing part files to: ${input_dir}"
   
   # Use the output_prefix with path for split command
   split -l $chunk_size "$file_path" "$output_prefix"
   
   for f in "${input_dir}"/part_*; do
     # Check if the file is empty
-    if ! validate_file "$f"; then
-      exit 1
-    fi
     
     part_count=$((part_count + 1))
     local current_time=$(date +%s)
