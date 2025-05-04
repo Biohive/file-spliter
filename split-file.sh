@@ -79,8 +79,8 @@ validate_file() {
   return "0"
 }
 
+# Function to get the file size in GB
 get_file_size() {
-  # Return file size in GB
   local file_path_to_check="$1"
   if [ -f "$file_path_to_check" ]; then
     file_size_bytes=$(stat --format="%s" "$file_path_to_check")
@@ -91,32 +91,86 @@ get_file_size() {
   fi
 }
 
+# Function to get the number of parts based on chunk size
+get_parts_count() {
+  local input_file="$1"
+  local chunk_size="$2"
+  
+  # Count total lines in the file
+  local total_lines=$(wc -l < "$input_file")
+  
+  # Calculate number of parts (rounding up)
+  local parts_count=$(( (total_lines + chunk_size - 1) / chunk_size ))
+  
+  echo "$parts_count"
+}
+
+# Function to display a message at the start
 getting_started_msg() {
   echo "File path: $file_path"
   echo "File size: $(get_file_size "$file_path") Gigabytes"
   echo "Chunk size: $chunk_size lines"
+  echo "Expected number of parts: $(get_parts_count "$file_path" "$chunk_size")"
   echo "Log level: $LOG_LEVEL"
-  echo -e "/n"
+  echo -e "\n" 
+}
+
+# Function to format seconds to HH:MM:SS
+format_time() {
+  local seconds=$1
+  local hours=$(( seconds / 3600 ))
+  local minutes=$(( (seconds % 3600) / 60 ))
+  local secs=$(( seconds % 60 ))
+  printf "%02d:%02d:%02d" $hours $minutes $secs
 }
 
 process_file() {
+  local total_parts=$(get_parts_count "$file_path" "$chunk_size")
+  local start_time=$(date +%s)
+  local part_count=0
   
+  echo "Starting file split process..."
   split -l $chunk_size $file_path part_
-
+  
   for f in part_*; do
     # Check if the file is empty
     if ! validate_file "$f"; then
       exit 1
     fi
-    echo "Processing $f"
-    echo -e "File size of part: $(get_file_size "$f") Gigabytes"
+    
+    part_count=$((part_count + 1))
+    local current_time=$(date +%s)
+    local elapsed_time=$((current_time - start_time))
+    
+    # Calculate progress and estimates
+    local percent_complete=$(( (part_count * 100) / total_parts ))
+    
+    # Only calculate average and ETA if we've completed at least one part
+    if [ $part_count -gt 0 ]; then
+      local avg_time_per_part=$(( elapsed_time / part_count ))
+      local remaining_parts=$((total_parts - part_count))
+      local est_remaining_time=$((avg_time_per_part * remaining_parts))
+      local est_completion_formatted=$(format_time $est_remaining_time)
+    else
+      local est_completion_formatted="calculating..."
+    fi
+    
+    echo "Processing $f (part $part_count of $total_parts)"
+    echo "File size of part: $(get_file_size "$f") Gigabytes"
+    echo "Progress: $percent_complete% complete"
+    echo "Elapsed time: $(format_time $elapsed_time)"
+    echo "Estimated time remaining: $est_completion_formatted"
+    echo "----------------------------------------"
+    
     # Add your processing command here
     # For example, you can use psql to import the CSV into a database
     # psql -U postgres -d hist-trade-1 -c "\COPY option_quotes FROM '$PWD/$f' CSV HEADER"
     # Todo: Remove file (safely)
   done
+  
+  local total_time=$(( $(date +%s) - start_time ))
+  echo "Processing complete! Total time: $(format_time $total_time)"
 }
-
 
 process_args "$@"
 if ! validate_file "$file_path" ; then exit 1; fi
